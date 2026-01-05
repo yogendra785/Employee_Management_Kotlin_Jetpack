@@ -1,4 +1,4 @@
-package com.example.neutron.model
+package com.example.neutron.domain.model
 
 data class Employee(
     val id:Long,
@@ -6,5 +6,6 @@ data class Employee(
     val email: String,
     val role:String,
     val department:String,
-    val isActive: Boolean
+    val isActive: Boolean,
+    val createdAt: Long
 )

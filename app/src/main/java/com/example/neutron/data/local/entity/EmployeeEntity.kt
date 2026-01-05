@@ -10,7 +10,7 @@ data class EmployeeEntity(
     val name:String,
     val email: String,
     val role: String,
-    val department: String, //for rolebased -Admin/Employee
+    val department: String,
     val isActive: Boolean=true,
     val createdAt: Long
 )
