@@ -7,14 +7,14 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface EmployeeDao {
 
-    @Query("SELECT * FROM employees")
+    @Query("SELECT * FROM employees ORDER BY name ASC")
     fun getAllEmployees(): Flow<List<EmployeeEntity>>
 
     @Query("SELECT * FROM employees WHERE id = :employeeId LIMIT 1")
     fun getEmployeeById(employeeId: Long): Flow<EmployeeEntity?>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertEmployee(employee: EmployeeEntity)
+    @Insert(onConflict = OnConflictStrategy.IGNORE) // Ignore if ID already exists
+    suspend fun insertEmployee(employee: EmployeeEntity): Long
 
     @Update
     suspend fun updateEmployee(employee: EmployeeEntity)
@@ -22,9 +22,9 @@ interface EmployeeDao {
     @Delete
     suspend fun deleteEmployee(employee: EmployeeEntity)
 
+    @Query("SELECT EXISTS(SELECT 1 FROM employees WHERE email = :email)")
+    suspend fun isEmailExists(email: String): Boolean
+
     @Query("UPDATE employees SET isActive = :isActive WHERE id = :employeeId")
-    suspend fun updateEmployeeStatus(
-        employeeId: Long,
-        isActive: Boolean
-    )
+    suspend fun updateEmployeeStatus(employeeId: Long, isActive: Boolean)
 }

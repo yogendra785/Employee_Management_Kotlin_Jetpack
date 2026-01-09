@@ -8,11 +8,13 @@ class EmployeeViewModelFactory(
     private val repository: EmployeeRepository
 ) : ViewModelProvider.Factory {
 
+    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(EmployeeViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return EmployeeViewModel(repository) as T
+        return when {
+            modelClass.isAssignableFrom(EmployeeViewModel::class.java) -> {
+                EmployeeViewModel(repository) as T
+            }
+            else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

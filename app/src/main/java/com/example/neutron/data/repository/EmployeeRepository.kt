@@ -11,7 +11,6 @@ class EmployeeRepository(
     private val dao: EmployeeDao
 ) {
 
-    // 🔹 Expose all employees as Flow (NOT StateFlow)
     fun getAllEmployees(): Flow<List<Employee>> {
         return dao.getAllEmployees()
             .map { entities ->
@@ -19,32 +18,29 @@ class EmployeeRepository(
             }
     }
 
-    // 🔹 Get single employee
     fun getEmployeeById(id: Long): Flow<Employee?> {
         return dao.getEmployeeById(id)
             .map { it?.toEmployee() }
     }
 
-    // 🔹 Add employee
-    suspend fun addEmployee(employee: Employee) {
+    suspend fun insertEmployee(employee: Employee) {
         dao.insertEmployee(employee.toEmployeeEntity())
     }
 
-    // 🔹 Update employee
     suspend fun updateEmployee(employee: Employee) {
         dao.updateEmployee(employee.toEmployeeEntity())
     }
 
-    // 🔹 Delete employee
     suspend fun deleteEmployee(employee: Employee) {
         dao.deleteEmployee(employee.toEmployeeEntity())
     }
 
-    // 🔹 Toggle active status
-    suspend fun updateEmployeeStatus(
-        id: Long,
-        isActive: Boolean
-    ) {
+    suspend fun updateEmployeeStatus(id: Long, isActive: Boolean) {
         dao.updateEmployeeStatus(id, isActive)
+    }
+
+    suspend fun isEmailExists(email: String): Boolean {
+        // This now directly uses the Boolean check from our updated DAO
+        return dao.isEmailExists(email)
     }
 }

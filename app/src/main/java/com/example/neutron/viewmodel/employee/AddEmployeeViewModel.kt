@@ -1,109 +1,93 @@
 package com.example.neutron.viewmodel.employee
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.neutron.data.repository.EmployeeRepository
+import com.example.neutron.domain.model.Employee
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-class AddEmployeeViewModel : ViewModel() {
+class AddEmployeeViewModel(private val repository: EmployeeRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AddEmployeeUiState())
     val uiState: StateFlow<AddEmployeeUiState> = _uiState.asStateFlow()
 
-    /* -------------------- Input Handlers -------------------- */
-
     fun onNameChange(value: String) {
-        val trimmed = value.trim()
-        _uiState.value = _uiState.value.copy(
-            name = trimmed,
-            nameError = if (!isValidName(trimmed)) "Enter a valid name" else null
-        )
+        _uiState.update { it.copy(
+            name = value,
+            nameError = if (value.trim().length < 3) "Name too short" else null
+        ) }
         updateSaveEnabledState()
     }
 
     fun onEmailChange(value: String) {
-        val trimmed = value.trim()
-        _uiState.value = _uiState.value.copy(
-            email = trimmed,
-            emailError = if (!isValidEmail(trimmed)) "Invalid email address" else null
-        )
+        _uiState.update { it.copy(
+            email = value,
+            emailError = if (!isValidEmail(value.trim())) "Invalid email format" else null
+        ) }
         updateSaveEnabledState()
     }
 
     fun onRoleChange(value: String) {
-        _uiState.value = _uiState.value.copy(role = value.trim())
+        _uiState.update { it.copy(role = value) }
         updateSaveEnabledState()
     }
 
     fun onDepartmentChange(value: String) {
-        _uiState.value = _uiState.value.copy(department = value.trim())
+        _uiState.update { it.copy(department = value) }
     }
 
     fun onActiveChange(value: Boolean) {
-        _uiState.value = _uiState.value.copy(isActive = value)
+        _uiState.update { it.copy(isActive = value) }
     }
-
-    /* -------------------- Save Action -------------------- */
 
     fun onSaveEmployee() {
-        if (!validate()) return   // ⛔ FINAL SAFETY CHECK
+        val currentState = _uiState.value
+        if (!validate(currentState)) return
 
-        val state = _uiState.value
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
 
-        // 🔜 Next step:
-        // val employee = Employee(
-        //     name = state.name,
-        //     email = state.email,
-        //     role = state.role,
-        //     department = state.department,
-        //     isActive = state.isActive
-        // )
-        //
-        // repository.insertEmployee(employee)
+            val emailExists = repository.isEmailExists(currentState.email.trim())
+            if (emailExists) {
+                _uiState.update { it.copy(emailError = "Email already registered", isLoading = false) }
+                return@launch
+            }
+
+            val employee = Employee(
+                name = currentState.name.trim(),
+                email = currentState.email.trim(),
+                role = currentState.role.trim(),
+                department = currentState.department.trim(),
+                isActive = currentState.isActive
+            )
+
+            repository.insertEmployee(employee)
+            _uiState.update { it.copy(isSuccess = true, isLoading = false) }
+        }
     }
 
-    /* -------------------- Validation -------------------- */
+    fun resetSuccess() {
+        _uiState.update { AddEmployeeUiState() } // Fully reset for next entry
+    }
 
     private fun updateSaveEnabledState() {
-        val state = _uiState.value
-        _uiState.value = state.copy(
-            isSaveEnabled =
-                state.nameError == null &&
-                        state.emailError == null &&
-                        state.name.isNotBlank() &&
-                        state.email.isNotBlank() &&
-                        state.role.isNotBlank()
-        )
+        _uiState.update { state ->
+            state.copy(isSaveEnabled = state.name.isNotBlank() &&
+                    state.email.isNotBlank() &&
+                    state.role.isNotBlank() &&
+                    state.nameError == null &&
+                    state.emailError == null)
+        }
     }
 
-    private fun validate(): Boolean {
-        val state = _uiState.value
-
-        val nameError =
-            if (!isValidName(state.name)) "Enter a valid name" else null
-
-        val emailError =
-            if (!isValidEmail(state.email)) "Invalid email address" else null
-
-        val isValid =
-            nameError == null &&
-                    emailError == null &&
-                    state.role.isNotBlank()
-
-        _uiState.value = state.copy(
-            nameError = nameError,
-            emailError = emailError,
-            isSaveEnabled = isValid
-        )
-
-        return isValid
-    }
-
-    /* -------------------- Validators -------------------- */
-
-    private fun isValidName(name: String): Boolean {
-        // Only letters and spaces, minimum 3 characters
-        return name.matches(Regex("^[a-zA-Z ]{3,}$"))
+    private fun validate(state: AddEmployeeUiState): Boolean {
+        val nameValid = state.name.trim().length >= 3
+        val emailValid = isValidEmail(state.email.trim())
+        return nameValid && emailValid && state.role.isNotBlank()
     }
 
     private fun isValidEmail(email: String): Boolean {

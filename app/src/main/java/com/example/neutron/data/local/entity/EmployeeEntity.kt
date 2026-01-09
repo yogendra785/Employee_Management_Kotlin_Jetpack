@@ -5,12 +5,12 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "employees")
 data class EmployeeEntity(
-    @PrimaryKey
-    val id: Long,
-    val name:String,
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val name: String,
     val email: String,
     val role: String,
     val department: String,
-    val isActive: Boolean=true,
+    val isActive: Boolean = true,
     val createdAt: Long
 )

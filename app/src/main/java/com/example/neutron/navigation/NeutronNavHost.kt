@@ -1,86 +1,53 @@
 package com.example.neutron.navigation
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavType
+import androidx.compose.runtime.*
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
-import com.example.neutron.data.repository.EmployeeRepository
-import com.example.neutron.screens.attendance.AttendanceScreen
-import com.example.neutron.screens.dashboard.DashboardScreen
-import com.example.neutron.screens.employee.AddEmployeeScreen
-import com.example.neutron.screens.employee.EmployeeDetailScreen
-import com.example.neutron.screens.employee.EmployeeListScreen
-import com.example.neutron.viewmodel.employee.EmployeeViewModel
-import com.example.neutron.viewmodel.employee.EmployeeViewModelFactory
+import com.example.neutron.screens.auth.LoginScreen
+import com.example.neutron.screens.auth.SignupScreen
+import com.example.neutron.viewmodel.auth.AuthState
+import com.example.neutron.viewmodel.auth.AuthViewModel
 
 @Composable
 fun NeutronNavHost(
     navController: NavHostController,
-    employeeRepository: EmployeeRepository
+    authViewModel: AuthViewModel
 ) {
+    val authState by authViewModel.authState.collectAsState()
 
-    val employeeViewModel: EmployeeViewModel = viewModel(
-        factory = EmployeeViewModelFactory(employeeRepository)
-    )
-
-    Scaffold(
-        bottomBar = { BottomBar(navController) }
-    ) { paddingValues ->
-
-        NavHost(
-            navController = navController,
-            startDestination = NavRoutes.DASHBOARD,
-            modifier = Modifier.padding(paddingValues)
-        ) {
-
-            composable(NavRoutes.DASHBOARD) {
-                DashboardScreen(navController)
+    LaunchedEffect(authState) {
+        when (authState) {
+            is AuthState.Authenticated -> {
+                // Navigate to the main app container and clear auth history
+                navController.navigate("main_app") {
+                    popUpTo(0) { inclusive = true }
+                }
             }
-
-            composable(NavRoutes.EMPLOYEE) {
-                EmployeeListScreen(
-                    viewModel = employeeViewModel,
-                    navigate = { route ->
-                        navController.navigate(route)
-                    }
-                )
+            is AuthState.Unauthenticated -> {
+                navController.navigate(NavRoutes.LOGIN) {
+                    popUpTo(0) { inclusive = true }
+                }
             }
+            else -> Unit
+        }
+    }
 
+    NavHost(navController = navController, startDestination = NavRoutes.LOGIN) {
+        composable(NavRoutes.LOGIN) {
+            LoginScreen(authViewModel, onSignupClick = { navController.navigate(NavRoutes.SIGNUP) })
+        }
 
-            composable("add_employee") {
-                AddEmployeeScreen(
-                    onEmployeeSaved = {
-                        navController.popBackStack()
-                    }
-                )
-            }
+        composable(NavRoutes.SIGNUP) {
+            SignupScreen(authViewModel, onLoginClick = { navController.popBackStack() })
+        }
 
-            composable(
-                route = "employee_detail/{employeeId}",
-                arguments = listOf(
-                    navArgument("employeeId") { type = NavType.LongType }
-                )
-            ) { backStackEntry ->
-
-                val employeeId =
-                    backStackEntry.arguments?.getLong("employeeId")
-                        ?: return@composable
-
-                EmployeeDetailScreen(
-                    employeeId = employeeId,
-                    viewModel = employeeViewModel
-                )
-            }
-
-            composable(NavRoutes.ATTENDANCE) {
-                AttendanceScreen()
-            }
+        composable("main_app") {
+            // We pass the root controller here so MainScaffold can trigger a logout redirect
+            MainScaffold(
+                rootNavController = navController,
+                authViewModel = authViewModel
+            )
         }
     }
 }

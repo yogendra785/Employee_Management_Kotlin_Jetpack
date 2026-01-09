@@ -4,32 +4,33 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.neutron.data.repository.EmployeeRepository
 import com.example.neutron.domain.model.Employee
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class EmployeeViewModel(
     private val repository: EmployeeRepository
 ) : ViewModel() {
 
-    // 🔹 UI observes employees as StateFlow
+    private var recentlyDeletedEmployee: Employee? = null
+
+    // 🔹 Convert cold flow to StateFlow for UI performance
     val employees: StateFlow<List<Employee>> =
         repository.getAllEmployees()
             .stateIn(
-                viewModelScope,
-                SharingStarted.Companion.WhileSubscribed(5_000),
-                emptyList()
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
             )
 
-    fun addEmployee(employee: Employee) {
+    fun insertEmployee(employee: Employee) {
         viewModelScope.launch {
-            repository.addEmployee(employee)
+            repository.insertEmployee(employee)
         }
     }
 
     fun deleteEmployee(employee: Employee) {
         viewModelScope.launch {
+            recentlyDeletedEmployee = employee
             repository.deleteEmployee(employee)
         }
     }
@@ -41,5 +42,18 @@ class EmployeeViewModel(
                 isActive = !employee.isActive
             )
         }
+    }
+
+    fun undoDelete() {
+        recentlyDeletedEmployee?.let { employee ->
+            viewModelScope.launch {
+                repository.insertEmployee(employee)
+                recentlyDeletedEmployee = null
+            }
+        }
+    }
+
+    fun getEmployeeById(id: Long): Flow<Employee?> {
+        return repository.getEmployeeById(id)
     }
 }
