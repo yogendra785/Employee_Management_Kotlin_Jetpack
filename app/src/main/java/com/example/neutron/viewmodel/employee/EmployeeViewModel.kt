@@ -4,10 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.neutron.data.repository.EmployeeRepository
 import com.example.neutron.domain.model.Employee
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class EmployeeViewModel(
+@HiltViewModel
+class EmployeeViewModel @Inject constructor(
     private val repository: EmployeeRepository
 ) : ViewModel() {
 

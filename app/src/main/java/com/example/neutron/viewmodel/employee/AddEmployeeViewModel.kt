@@ -4,13 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.neutron.data.repository.EmployeeRepository
 import com.example.neutron.domain.model.Employee
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class AddEmployeeViewModel(private val repository: EmployeeRepository) : ViewModel() {
+
+@HiltViewModel
+class AddEmployeeViewModel @Inject constructor(private val repository: EmployeeRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AddEmployeeUiState())
     val uiState: StateFlow<AddEmployeeUiState> = _uiState.asStateFlow()

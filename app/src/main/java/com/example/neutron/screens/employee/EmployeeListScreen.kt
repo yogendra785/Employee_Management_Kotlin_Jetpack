@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.neutron.navigation.NavRoutes
@@ -22,18 +23,11 @@ fun EmployeeListScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { navigate(NavRoutes.ADD_EMPLOYEE) }) {
-                Icon(Icons.Default.Add, contentDescription = "Add Employee")
-            }
-        }
-    ) { paddingValues ->
+    // 🔹 Use Box to overlay FAB and Snackbar since we removed the inner Scaffold
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .padding(16.dp)
         ) {
             Text(
@@ -44,9 +38,14 @@ fun EmployeeListScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             if (employees.isEmpty()) {
+                // Ensure this Composable exists in your employee package
                 EmptyEmployeeState()
             } else {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(bottom = 80.dp) // Space for FAB
+                ) {
                     items(employees, key = { it.id }) { employee ->
                         EmployeeItem(
                             employee = employee,
@@ -71,5 +70,23 @@ fun EmployeeListScreen(
                 }
             }
         }
+
+        // 🔹 Manual Floating Action Button
+        FloatingActionButton(
+            onClick = { navigate(NavRoutes.ADD_EMPLOYEE) },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(bottom = 16.dp, end = 16.dp)
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Add Employee")
+        }
+
+        // 🔹 Manual Snackbar Host
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 16.dp)
+        )
     }
 }

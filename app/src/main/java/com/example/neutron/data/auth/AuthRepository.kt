@@ -3,11 +3,13 @@ package com.example.neutron.data.auth
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class AuthRepository(
+@Singleton // 🔹 Ensures only one instance exists for the whole app
+class AuthRepository @Inject constructor() { // 🔹 Added @Inject constructor
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
-) {
-    // Changing this to a function ensures you get the LATEST user state
+
     fun getCurrentUser(): FirebaseUser? = auth.currentUser
 
     suspend fun login(email: String, password: String): Result<FirebaseUser?> {
@@ -32,7 +34,5 @@ class AuthRepository(
         auth.signOut()
     }
 
-    fun isLoggedIn(): Boolean {
-        return auth.currentUser != null
-    }
+    fun isLoggedIn(): Boolean = auth.currentUser != null
 }

@@ -19,38 +19,43 @@ fun DashboardScreen(
     navController: NavController,
     authViewModel: AuthViewModel
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Neutron HRM") },
-                actions = {
-                    IconButton(onClick = { authViewModel.logout() }) {
-                        Icon(Icons.Default.Logout, contentDescription = "Logout")
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // 🔹 ADDED: A Header Row with the Logout Button
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text("Welcome back!", style = MaterialTheme.typography.headlineMedium)
 
-            DashboardCard(
-                title = "Manage Employees",
-                subtitle = "View, add, or edit staff members",
-                onClick = { navController.navigate(NavRoutes.EMPLOYEE) }
-            )
-
-            DashboardCard(
-                title = "Daily Attendance",
-                subtitle = "Mark present/absent for today",
-                onClick = { navController.navigate(NavRoutes.ATTENDANCE) }
-            )
+            IconButton(onClick = { authViewModel.logout() }) {
+                Icon(
+                    imageVector = Icons.Default.Logout,
+                    contentDescription = "Logout",
+                    tint = MaterialTheme.colorScheme.error
+                )
+            }
         }
+
+        DashboardCard(
+            title = "Manage Employees",
+            subtitle = "View, add, or edit staff members",
+            onClick = { navController.navigate(NavRoutes.EMPLOYEE) }
+        )
+
+        DashboardCard(
+            title = "Daily Attendance",
+            subtitle = "Mark present/absent for today",
+            onClick = { navController.navigate(NavRoutes.ATTENDANCE) }
+        )
     }
 }
+
 
 @Composable
 fun DashboardCard(title: String, subtitle: String, onClick: () -> Unit) {

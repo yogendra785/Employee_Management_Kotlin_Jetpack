@@ -3,23 +3,18 @@ package com.example.neutron.viewmodel.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.neutron.data.auth.AuthRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-sealed class AuthState {
-    object Idle : AuthState()
-    object Loading : AuthState()
-    object Unauthenticated : AuthState()
-    object Authenticated : AuthState()
-    data class Error(val message: String) : AuthState()
-}
-
-class AuthViewModel(
-    private val repository: AuthRepository = AuthRepository()
+@HiltViewModel
+class AuthViewModel @Inject constructor(
+    private val repository: AuthRepository
 ) : ViewModel() {
 
-    private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
+    private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
     val authState: StateFlow<AuthState> = _authState
 
     init {
@@ -61,8 +56,7 @@ class AuthViewModel(
         _authState.value = AuthState.Unauthenticated
     }
 
-    // Reset state to idle (useful for clearing error messages in the UI)
     fun resetState() {
-        _authState.value = if (repository.isLoggedIn()) AuthState.Authenticated else AuthState.Unauthenticated
+        checkAuthState()
     }
 }

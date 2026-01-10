@@ -28,93 +28,93 @@ fun AddEmployeeScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("New Employee") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .padding(16.dp)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            OutlinedTextField(
-                value = uiState.name,
-                onValueChange = viewModel::onNameChange,
-                label = { Text("Full Name") },
-                isError = uiState.nameError != null,
-                supportingText = { uiState.nameError?.let { Text(it) } },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            OutlinedTextField(
-                value = uiState.email,
-                onValueChange = viewModel::onEmailChange,
-                label = { Text("Email Address") },
-                isError = uiState.emailError != null,
-                supportingText = { uiState.emailError?.let { Text(it) } },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            OutlinedTextField(
-                value = uiState.role,
-                onValueChange = viewModel::onRoleChange,
-                label = { Text("Job Role (e.g. Manager)") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            OutlinedTextField(
-                value = uiState.department,
-                onValueChange = viewModel::onDepartmentChange,
-                label = { Text("Department") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                )
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text("Active Status", style = MaterialTheme.typography.titleSmall)
-                        Text("Currently employed", style = MaterialTheme.typography.bodySmall)
-                    }
-                    Switch(
-                        checked = uiState.isActive,
-                        onCheckedChange = viewModel::onActiveChange
-                    )
-                }
+    // 🔹 FIX: Removed the internal Scaffold to prevent navigation "ghosting"
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // 🔹 ADDED: Manual Header instead of TopAppBar to avoid Scaffold layering
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onBack) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
             }
+            Text("New Employee", style = MaterialTheme.typography.titleLarge)
+        }
 
-            Spacer(modifier = Modifier.weight(1f))
+        OutlinedTextField(
+            value = uiState.name,
+            onValueChange = viewModel::onNameChange,
+            label = { Text("Full Name") },
+            isError = uiState.nameError != null,
+            supportingText = { uiState.nameError?.let { Text(it) } },
+            modifier = Modifier.fillMaxWidth()
+        )
 
-            Button(
-                onClick = { viewModel.onSaveEmployee() },
-                enabled = uiState.isSaveEnabled && !uiState.isLoading,
-                modifier = Modifier.fillMaxWidth()
+        OutlinedTextField(
+            value = uiState.email,
+            onValueChange = viewModel::onEmailChange,
+            label = { Text("Email Address") },
+            isError = uiState.emailError != null,
+            supportingText = { uiState.emailError?.let { Text(it) } },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = uiState.role,
+            onValueChange = viewModel::onRoleChange,
+            label = { Text("Job Role (e.g. Manager)") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = uiState.department,
+            onValueChange = viewModel::onDepartmentChange,
+            label = { Text("Department") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            )
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
-                } else {
-                    Text("Save Employee")
+                Column {
+                    Text("Active Status", style = MaterialTheme.typography.titleSmall)
+                    Text("Currently employed", style = MaterialTheme.typography.bodySmall)
                 }
+                Switch(
+                    checked = uiState.isActive,
+                    onCheckedChange = viewModel::onActiveChange
+                )
+            }
+        }
+
+        // 🔹 Spacer doesn't work well inside a verticalScroll unless you give it height
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(
+            onClick = { viewModel.onSaveEmployee() },
+            enabled = uiState.isSaveEnabled && !uiState.isLoading,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            if (uiState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text("Save Employee")
             }
         }
     }
