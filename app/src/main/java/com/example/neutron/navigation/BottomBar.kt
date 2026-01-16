@@ -26,7 +26,6 @@ fun BottomBar(navController: NavController) {
                 onClick = {
                     if (currentRoute != item.route) {
                         navController.navigate(item.route) {
-                            // 🔹 FIX: This clears the stack all the way to the Dashboard
                             popUpTo(navController.graph.findStartDestination().id) {
                                 saveState = true
                             }

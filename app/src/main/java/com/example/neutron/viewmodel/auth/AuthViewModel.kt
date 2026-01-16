@@ -6,6 +6,7 @@ import com.example.neutron.data.auth.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -13,6 +14,14 @@ import javax.inject.Inject
 class AuthViewModel @Inject constructor(
     private val repository: AuthRepository
 ) : ViewModel() {
+    private val _userRole = MutableStateFlow("ADMIN")
+    val userRole: StateFlow<String> = _userRole.asStateFlow()
+
+    //function to update role
+
+    fun setUserRole(role:String){
+        _userRole.value = role
+    }
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
     val authState: StateFlow<AuthState> = _authState

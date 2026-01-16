@@ -5,6 +5,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -12,25 +13,28 @@ import androidx.navigation.compose.rememberNavController
 import com.example.neutron.screens.attendance.AttendanceScreen
 import com.example.neutron.screens.dashboard.DashboardScreen
 import com.example.neutron.screens.employee.*
+import com.example.neutron.screens.leave.AdminLeaveListScreen
+import com.example.neutron.screens.leaverequestscreen.LeaveRequestScreen
 import com.example.neutron.viewmodel.attendance.AttendanceViewModel
 import com.example.neutron.viewmodel.auth.AuthViewModel
 import com.example.neutron.viewmodel.employee.*
+import com.example.neutron.viewmodel.leave.LeaveViewModel
 
 @Composable
 fun MainScaffold(
     rootNavController: NavHostController,
     authViewModel: AuthViewModel
 ) {
-    // This is the controller for the bottom navigation and internal app flow
+
     val appNavController = rememberNavController()
 
     Scaffold(
         bottomBar = {
-            // Pass the appNavController to the BottomBar
+
             BottomBar(navController = appNavController)
         }
     ) { paddingValues ->
-        // The NavHost manages which screen content is shown
+
         NavHost(
             navController = appNavController,
             startDestination = NavRoutes.DASHBOARD,
@@ -82,6 +86,23 @@ fun MainScaffold(
                     employeeViewModel = eVM,
                     attendanceViewModel = aVM,
                     onBack = { appNavController.popBackStack() }
+                )
+            }
+
+            //6. Leave Request
+            composable(NavRoutes.LEAVE_REQUEST){
+                val leaveVM: LeaveViewModel = hiltViewModel()
+                LeaveRequestScreen(
+                    viewModel =  leaveVM,
+                    onBack = {appNavController.popBackStack()}
+                )
+            }
+            //7-leave request admin screen
+            composable(NavRoutes.ADMIN_LEAVE_LIST){
+                val leaveVM: LeaveViewModel = hiltViewModel()
+                AdminLeaveListScreen(
+                    viewModel  = leaveVM,
+                    onBack = {appNavController.popBackStack()}
                 )
             }
         }

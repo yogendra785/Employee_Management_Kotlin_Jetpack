@@ -8,19 +8,24 @@ import com.example.neutron.data.local.dao.AttendanceDao
 import com.example.neutron.data.local.dao.EmployeeDao
 import com.example.neutron.data.local.entity.AttendanceEntity
 import com.example.neutron.data.local.entity.EmployeeEntity
+import com.example.neutron.domain.model.LeaveRequest
+import com.example.neutron.data.local.dao.LeaveDao
+
 
 @Database(
     entities = [
         EmployeeEntity::class,
-        AttendanceEntity::class
+        AttendanceEntity::class,
+        LeaveRequest::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class EmployeeDatabase : RoomDatabase() {
 
     abstract fun employeeDao(): EmployeeDao
     abstract fun attendanceDao(): AttendanceDao
+    abstract fun leaveDao(): LeaveDao
 
     companion object {
         @Volatile

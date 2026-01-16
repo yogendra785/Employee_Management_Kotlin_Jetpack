@@ -1,11 +1,10 @@
 package com.example.neutron.screens.dashboard
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -13,19 +12,20 @@ import androidx.navigation.NavController
 import com.example.neutron.navigation.NavRoutes
 import com.example.neutron.viewmodel.auth.AuthViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     navController: NavController,
     authViewModel: AuthViewModel
 ) {
+    val userRole by authViewModel.userRole.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // 🔹 ADDED: A Header Row with the Logout Button
+        // Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -35,36 +35,59 @@ fun DashboardScreen(
 
             IconButton(onClick = { authViewModel.logout() }) {
                 Icon(
-                    imageVector = Icons.Default.Logout,
+                    imageVector = Icons.AutoMirrored.Filled.Logout,
                     contentDescription = "Logout",
                     tint = MaterialTheme.colorScheme.error
                 )
             }
         }
 
-        DashboardCard(
-            title = "Manage Employees",
-            subtitle = "View, add, or edit staff members",
-            onClick = { navController.navigate(NavRoutes.EMPLOYEE) }
-        )
-
+        // 1. Attendance Card
         DashboardCard(
             title = "Daily Attendance",
             subtitle = "Mark present/absent for today",
             onClick = { navController.navigate(NavRoutes.ATTENDANCE) }
         )
+
+        // 2. Role-Based Cards
+        if (userRole == "ADMIN") {
+            // ADMIN ONLY: Staff Management
+            DashboardCard(
+                title = "Manage Employees",
+                subtitle = "View, add, or edit staff members",
+                onClick = { navController.navigate(NavRoutes.EMPLOYEE) }
+            )
+
+            // ADMIN ONLY: Leave Approval
+            DashboardCard(
+                title = "Review Leave Requests",
+                subtitle = "Approve or reject employee leaves",
+                onClick = { navController.navigate(NavRoutes.ADMIN_LEAVE_LIST) }
+            )
+        } else {
+            // EMPLOYEE ONLY: Request Leave
+            DashboardCard(
+                title = "Leave Request",
+                subtitle = "Apply for time off or check status",
+                onClick = { navController.navigate(NavRoutes.LEAVE_REQUEST) }
+            )
+        }
     }
 }
-
 
 @Composable
 fun DashboardCard(title: String, subtitle: String, onClick: () -> Unit) {
     ElevatedCard(
-        modifier = Modifier.fillMaxWidth().clickable { onClick() }
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             Text(title, style = MaterialTheme.typography.titleLarge)
-            Text(subtitle, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant // Improved readability
+            )
         }
     }
 }

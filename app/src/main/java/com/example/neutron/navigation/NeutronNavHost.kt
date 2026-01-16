@@ -13,26 +13,23 @@ import com.example.neutron.viewmodel.auth.AuthState
 @Composable
 fun NeutronNavHost(navController: NavHostController, authViewModel: AuthViewModel) {
 
-    // 1. Observe the authentication state from the ViewModel
     val authState by authViewModel.authState.collectAsState()
 
-    // 2. 🔹 CRITICAL: This reacts to state changes (like successful login)
     LaunchedEffect(authState) {
         when (authState) {
             is AuthState.Authenticated -> {
-                // When state becomes Authenticated, jump to the main app
+
                 navController.navigate("main_app") {
-                    // Remove Login/Splash from the backstack so user can't go back to them
+
                     popUpTo(NavRoutes.SPLASH) { inclusive = true }
                 }
             }
             is AuthState.Unauthenticated -> {
-                // If the user logs out, send them back to Login
                 navController.navigate(NavRoutes.LOGIN) {
                     popUpTo(0)
                 }
             }
-            else -> {} // Do nothing for Loading or Error states here
+            else -> {}
         }
     }
 
