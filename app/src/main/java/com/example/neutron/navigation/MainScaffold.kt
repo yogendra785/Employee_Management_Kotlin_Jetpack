@@ -5,7 +5,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -14,7 +13,8 @@ import com.example.neutron.screens.attendance.AttendanceScreen
 import com.example.neutron.screens.dashboard.DashboardScreen
 import com.example.neutron.screens.employee.*
 import com.example.neutron.screens.leave.AdminLeaveListScreen
-import com.example.neutron.screens.leaverequestscreen.LeaveRequestScreen
+import com.example.neutron.screens.leave.LeaveRequestScreen
+import com.example.neutron.screens.leave.MyLeaveHistoryScreen
 import com.example.neutron.viewmodel.attendance.AttendanceViewModel
 import com.example.neutron.viewmodel.auth.AuthViewModel
 import com.example.neutron.viewmodel.employee.*
@@ -102,6 +102,15 @@ fun MainScaffold(
                 val leaveVM: LeaveViewModel = hiltViewModel()
                 AdminLeaveListScreen(
                     viewModel  = leaveVM,
+                    onBack = {appNavController.popBackStack()}
+                )
+            }
+
+            //leave status
+            composable(NavRoutes.MY_LEAVE_HISTORY){
+                val leaveVM : LeaveViewModel = hiltViewModel()
+                MyLeaveHistoryScreen(
+                    viewModel = leaveVM,
                     onBack = {appNavController.popBackStack()}
                 )
             }

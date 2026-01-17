@@ -14,6 +14,10 @@ class LeaveRepository @Inject constructor(
     fun getLeavesForEmployee(empId: Long): Flow<List<LeaveRequest>> =
         leaveDao.getRequestsByEmployee(empId)
 
+    //function to fetch leaves for specific employee
+    fun getEmployeeLeaves(empId: Long): Flow<List<LeaveRequest>> =
+        leaveDao.getRequestsByEmployee(empId)
+
     suspend fun submitLeaveRequest(request: LeaveRequest){
         leaveDao.insertRequest(request)
     }

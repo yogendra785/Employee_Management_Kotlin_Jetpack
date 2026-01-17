@@ -14,10 +14,8 @@ import javax.inject.Inject
 class AuthViewModel @Inject constructor(
     private val repository: AuthRepository
 ) : ViewModel() {
-    private val _userRole = MutableStateFlow("ADMIN")
+    private val _userRole = MutableStateFlow("EMPLOYEE")
     val userRole: StateFlow<String> = _userRole.asStateFlow()
-
-    //function to update role
 
     fun setUserRole(role:String){
         _userRole.value = role

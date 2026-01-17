@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.neutron.data.repository.LeaveRepository
 import com.example.neutron.domain.model.LeaveRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,6 +19,11 @@ class LeaveViewModel @Inject constructor(
         viewModelScope.launch {
             repository.updateLeaveStatus(request.copy(status = newStatus))
         }
+    }
+
+    //function that holds only the current user's leaves
+    fun getMyLeaves(employeeId: Long): Flow<List<LeaveRequest>> {
+        return repository.getEmployeeLeaves(employeeId)
     }
 
 

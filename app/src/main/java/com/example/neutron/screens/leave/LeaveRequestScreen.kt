@@ -1,4 +1,4 @@
-package com.example.neutron.screens.leaverequestscreen
+package com.example.neutron.screens.leave
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons

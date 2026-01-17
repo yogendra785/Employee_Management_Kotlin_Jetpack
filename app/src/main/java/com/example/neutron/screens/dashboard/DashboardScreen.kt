@@ -49,6 +49,8 @@ fun DashboardScreen(
             onClick = { navController.navigate(NavRoutes.ATTENDANCE) }
         )
 
+
+
         // 2. Role-Based Cards
         if (userRole == "ADMIN") {
             // ADMIN ONLY: Staff Management
@@ -65,11 +67,19 @@ fun DashboardScreen(
                 onClick = { navController.navigate(NavRoutes.ADMIN_LEAVE_LIST) }
             )
         } else {
-            // EMPLOYEE ONLY: Request Leave
+
             DashboardCard(
                 title = "Leave Request",
-                subtitle = "Apply for time off or check status",
+                subtitle = "Apply for time off",
                 onClick = { navController.navigate(NavRoutes.LEAVE_REQUEST) }
+            )
+
+            Spacer(modifier = Modifier.height(0.dp)) // Managed by spacedBy
+
+            DashboardCard(
+                title = "My Leave History",
+                subtitle = "Check status of your request",
+                onClick = { navController.navigate(NavRoutes.MY_LEAVE_HISTORY) }
             )
         }
     }

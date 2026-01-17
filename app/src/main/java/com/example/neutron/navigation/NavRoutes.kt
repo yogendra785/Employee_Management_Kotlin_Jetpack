@@ -17,5 +17,6 @@ object NavRoutes {
 
     // Route with argument
     const val EMPLOYEE_DETAIL = "employee_detail/{employeeId}"
+    const val MY_LEAVE_HISTORY = "my_leave_history"
     fun createDetailRoute(id: Long) = "employee_detail/$id"
 }
