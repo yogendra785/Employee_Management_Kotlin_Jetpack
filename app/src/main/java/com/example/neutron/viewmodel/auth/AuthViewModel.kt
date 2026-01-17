@@ -3,6 +3,7 @@ package com.example.neutron.viewmodel.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.neutron.data.auth.AuthRepository
+import com.example.neutron.data.local.entity.EmployeeEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,18 +15,31 @@ import javax.inject.Inject
 class AuthViewModel @Inject constructor(
     private val repository: AuthRepository
 ) : ViewModel() {
+
+    // Role state
     private val _userRole = MutableStateFlow("EMPLOYEE")
     val userRole: StateFlow<String> = _userRole.asStateFlow()
 
-    fun setUserRole(role:String){
-        _userRole.value = role
-    }
+    // Current Session State
+    private val _currentUser = MutableStateFlow<EmployeeEntity?>(null)
+    val currentUser: StateFlow<EmployeeEntity?> = _currentUser.asStateFlow()
 
+    // Auth UI State
     private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
-    val authState: StateFlow<AuthState> = _authState
+    val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
     init {
         checkAuthState()
+    }
+
+    // 🔹 FIXED: Removed the stray '/' and added safety check
+    fun loginUser(employee: EmployeeEntity) {
+        _currentUser.value = employee
+        _userRole.value = employee.role
+    }
+
+    fun setUserRole(role: String) {
+        _userRole.value = role
     }
 
     private fun checkAuthState() {
@@ -41,8 +55,12 @@ class AuthViewModel @Inject constructor(
             _authState.value = AuthState.Loading
             val result = repository.login(email, password)
             result.fold(
-                onSuccess = { _authState.value = AuthState.Authenticated },
-                onFailure = { _authState.value = AuthState.Error(it.message ?: "Login failed") }
+                onSuccess = {
+                    _authState.value = AuthState.Authenticated
+                },
+                onFailure = {
+                    _authState.value = AuthState.Error(it.message ?: "Login failed")
+                }
             )
         }
     }
@@ -58,8 +76,11 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    // 🔹 UPDATED: Reset session data on logout
     fun logout() {
         repository.logout()
+        _currentUser.value = null
+        _userRole.value = "EMPLOYEE" // Reset to default
         _authState.value = AuthState.Unauthenticated
     }
 

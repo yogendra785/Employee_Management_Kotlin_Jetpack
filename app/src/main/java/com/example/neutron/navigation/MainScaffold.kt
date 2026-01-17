@@ -15,6 +15,7 @@ import com.example.neutron.screens.employee.*
 import com.example.neutron.screens.leave.AdminLeaveListScreen
 import com.example.neutron.screens.leave.LeaveRequestScreen
 import com.example.neutron.screens.leave.MyLeaveHistoryScreen
+import com.example.neutron.screens.profile.ProfileScreen
 import com.example.neutron.viewmodel.attendance.AttendanceViewModel
 import com.example.neutron.viewmodel.auth.AuthViewModel
 import com.example.neutron.viewmodel.employee.*
@@ -31,7 +32,8 @@ fun MainScaffold(
     Scaffold(
         bottomBar = {
 
-            BottomBar(navController = appNavController)
+            BottomBar(navController = appNavController,
+                authViewModel = authViewModel)
         }
     ) { paddingValues ->
 
@@ -112,6 +114,18 @@ fun MainScaffold(
                 MyLeaveHistoryScreen(
                     viewModel = leaveVM,
                     onBack = {appNavController.popBackStack()}
+                )
+            }
+
+            composable(NavRoutes.PROFILE) {
+                ProfileScreen(
+                    authViewModel = authViewModel, // Pass your existing AuthViewModel
+                    onLogout = {
+                        // Navigate to Login and clear backstack
+                        appNavController.navigate(NavRoutes.LOGIN) {
+                            popUpTo(0)
+                        }
+                    }
                 )
             }
         }
