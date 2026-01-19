@@ -1,8 +1,8 @@
 package com.example.neutron.viewmodel.auth
 
 sealed class AuthState {
-    object Loading : AuthState()
-    object Authenticated : AuthState()
-    object Unauthenticated : AuthState()
+    data object Unauthenticated : AuthState()
+    data object Loading : AuthState()
+    data class Authenticated(val userRole: String) : AuthState()
     data class Error(val message: String) : AuthState()
 }

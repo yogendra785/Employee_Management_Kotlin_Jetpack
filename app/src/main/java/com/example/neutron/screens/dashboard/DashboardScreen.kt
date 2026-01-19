@@ -11,13 +11,15 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.neutron.navigation.NavRoutes
 import com.example.neutron.viewmodel.auth.AuthViewModel
+import com.example.neutron.viewmodel.auth.AuthState
 
 @Composable
 fun DashboardScreen(
     navController: NavController,
     authViewModel: AuthViewModel
 ) {
-    val userRole by authViewModel.userRole.collectAsState()
+    // 🔹 Observe the entire authentication state
+    val authState by authViewModel.authState.collectAsState()
 
     Column(
         modifier = Modifier
@@ -42,45 +44,63 @@ fun DashboardScreen(
             }
         }
 
-        // 1. Attendance Card
+        // 🔹 1. Shared Feature: Attendance (Visible to everyone)
         DashboardCard(
             title = "Daily Attendance",
             subtitle = "Mark present/absent for today",
             onClick = { navController.navigate(NavRoutes.ATTENDANCE) }
         )
 
+        // 🔹 2. Handle different authentication states
+        when (val state = authState) {
+            is AuthState.Authenticated -> {
+                // If authenticated, then check the role
+                when (state.userRole) {
+                    "ADMIN" -> {
+                        // ADMIN ONLY: Staff Management
+                        DashboardCard(
+                            title = "Manage Employees",
+                            subtitle = "View, add, or edit staff members",
+                            onClick = { navController.navigate(NavRoutes.EMPLOYEE) }
+                        )
 
+                        // ADMIN ONLY: Leave Approval
+                        DashboardCard(
+                            title = "Review Leave Requests",
+                            subtitle = "Approve or reject employee leaves",
+                            onClick = { navController.navigate(NavRoutes.ADMIN_LEAVE_LIST) }
+                        )
+                    }
+                    "EMPLOYEE" -> {
+                        // EMPLOYEE ONLY: Requesting and History
+                        DashboardCard(
+                            title = "Leave Request",
+                            subtitle = "Apply for time off",
+                            onClick = { navController.navigate(NavRoutes.LEAVE_REQUEST) }
+                        )
 
-        // 2. Role-Based Cards
-        if (userRole == "ADMIN") {
-            // ADMIN ONLY: Staff Management
-            DashboardCard(
-                title = "Manage Employees",
-                subtitle = "View, add, or edit staff members",
-                onClick = { navController.navigate(NavRoutes.EMPLOYEE) }
-            )
-
-            // ADMIN ONLY: Leave Approval
-            DashboardCard(
-                title = "Review Leave Requests",
-                subtitle = "Approve or reject employee leaves",
-                onClick = { navController.navigate(NavRoutes.ADMIN_LEAVE_LIST) }
-            )
-        } else {
-
-            DashboardCard(
-                title = "Leave Request",
-                subtitle = "Apply for time off",
-                onClick = { navController.navigate(NavRoutes.LEAVE_REQUEST) }
-            )
-
-            Spacer(modifier = Modifier.height(0.dp)) // Managed by spacedBy
-
-            DashboardCard(
-                title = "My Leave History",
-                subtitle = "Check status of your request",
-                onClick = { navController.navigate(NavRoutes.MY_LEAVE_HISTORY) }
-            )
+                        DashboardCard(
+                            title = "My Leave History",
+                            subtitle = "Check status of your request",
+                            onClick = { navController.navigate(NavRoutes.MY_LEAVE_HISTORY) }
+                        )
+                    }
+                }
+            }
+            AuthState.Loading -> {
+                // Show a loader while role is being fetched
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+            is AuthState.Error, AuthState.Unauthenticated -> {
+                // For this screen, we can just show a loading state or nothing
+                // as the user will likely be redirected away by the NavHost soon.
+                // Or you can add a specific message.
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
         }
     }
 }

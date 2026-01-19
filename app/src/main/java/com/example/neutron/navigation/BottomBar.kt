@@ -2,55 +2,54 @@ package com.example.neutron.navigation
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.neutron.viewmodel.auth.AuthViewModel
 
 @Composable
 fun BottomBar(
     navController: NavController,
-    authViewModel: AuthViewModel
+    userRole: String // 🔹 Role is now a direct parameter
 ) {
+    // 🔹 Re-calculate the list whenever userRole changes
+    val items = remember(userRole) {
+        val list = mutableListOf<BottomNavItem>()
 
-    val userRole by authViewModel.userRole.collectAsState()
+        // Home is always visible
+        list.add(BottomNavItem.Home)
 
-    val items = mutableListOf<BottomNavItem>()
+        // 🔹 Show Employees ONLY if userRole is ADMIN
+        if (userRole == "ADMIN") {
+            list.add(BottomNavItem.Employees)
+        }
 
+        // Shared features
+        list.add(BottomNavItem.Attendance)
+        list.add(BottomNavItem.Profile)
 
-    items.add(BottomNavItem.Home)
-
-
-    if (userRole == "ADMIN") {
-        items.add(BottomNavItem.Employees)
+        list
     }
-
-
-    items.add(BottomNavItem.Attendance)
-    items.add(BottomNavItem.Profile)
 
     NavigationBar {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
 
         items.forEach { item ->
+            // Highlight the icon if it matches the current route
             val isSelected = currentRoute == item.route ||
-                    (item.route == NavRoutes.DASHBOARD && currentRoute == null)
+                (item.route == NavRoutes.DASHBOARD && currentRoute == null)
 
             NavigationBarItem(
                 selected = isSelected,
                 onClick = {
-                    if (currentRoute != item.route) {
-                        navController.navigate(item.route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-
-                            restoreState = true
+                    navController.navigate(item.route) {
+                        // Pop up to dashboard to avoid stacking screens
+                        popUpTo(NavRoutes.DASHBOARD) {
+                            saveState = true
                         }
+                        launchSingleTop = true
+                        restoreState = true
                     }
                 },
                 icon = {

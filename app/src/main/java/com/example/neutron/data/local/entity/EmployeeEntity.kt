@@ -12,5 +12,6 @@ data class EmployeeEntity(
     val role: String,
     val department: String,
     val isActive: Boolean = true,
-    val createdAt: Long
+    val createdAt: Long,
+    val password: String // Added password field
 )

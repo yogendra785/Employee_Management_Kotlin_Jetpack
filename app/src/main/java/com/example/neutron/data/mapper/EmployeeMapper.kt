@@ -12,7 +12,8 @@ fun EmployeeEntity.toEmployee(): Employee {
         role = role,
         department = department,
         isActive = isActive,
-        createdAt = createdAt
+        createdAt = createdAt,
+        password = password
     )
 }
 
@@ -25,6 +26,7 @@ fun Employee.toEmployeeEntity(): EmployeeEntity {
         role = role,
         department = department,
         isActive = isActive,
-        createdAt = createdAt
+        createdAt = createdAt,
+        password = password
     )
 }

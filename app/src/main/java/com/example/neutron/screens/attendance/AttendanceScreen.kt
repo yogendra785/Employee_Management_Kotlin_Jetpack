@@ -16,17 +16,16 @@ import java.util.Calendar
 @Composable
 fun AttendanceScreen(
     employeeViewModel: EmployeeViewModel,
-    attendanceViewModel: AttendanceViewModel
+    attendanceViewModel: AttendanceViewModel,
+    userRole: String
 ) {
     val employees by employeeViewModel.employees.collectAsState()
     val attendanceList by attendanceViewModel.attendanceList.collectAsState()
     val selectedDate by attendanceViewModel.selectedDate.collectAsState()
 
-    // 🔹 REMOVED: Scaffold and TopAppBar
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        // 🔹 ADDED: Manual Header to replace TopAppBar
         Surface(
             tonalElevation = 3.dp,
             shadowElevation = 2.dp
@@ -83,6 +82,7 @@ fun AttendanceScreen(
                         name = employee.name,
                         status = attendance?.status,
                         isLocked = attendance != null,
+                        isAdmin = userRole == "ADMIN",
                         onPresent = {
                             attendanceViewModel.markAttendance(employee.id, AttendanceStatus.PRESENT)
                         },

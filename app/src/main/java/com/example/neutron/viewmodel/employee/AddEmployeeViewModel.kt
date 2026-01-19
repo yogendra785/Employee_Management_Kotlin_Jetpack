@@ -1,5 +1,8 @@
 package com.example.neutron.viewmodel.employee
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.neutron.data.repository.EmployeeRepository
@@ -12,12 +15,22 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @HiltViewModel
-class AddEmployeeViewModel @Inject constructor(private val repository: EmployeeRepository) : ViewModel() {
+class AddEmployeeViewModel @Inject constructor(
+    private val repository: EmployeeRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AddEmployeeUiState())
     val uiState: StateFlow<AddEmployeeUiState> = _uiState.asStateFlow()
+
+    // 🔹 Added password change handler for the UI
+    fun onPasswordChange(value: String) {
+        _uiState.update { it.copy(
+            password = value,
+            passwordError = if (value.length < 4) "Password must be at least 4 characters" else null
+        ) }
+        updateSaveEnabledState()
+    }
 
     fun onNameChange(value: String) {
         _uiState.update { it.copy(
@@ -61,12 +74,16 @@ class AddEmployeeViewModel @Inject constructor(private val repository: EmployeeR
                 return@launch
             }
 
+            // 🔹 Corrected Constructor: Including all required fields
             val employee = Employee(
+                id = 0, // 0 for Room auto-generation
                 name = currentState.name.trim(),
                 email = currentState.email.trim(),
                 role = currentState.role.trim(),
                 department = currentState.department.trim(),
-                isActive = currentState.isActive
+                isActive = currentState.isActive,
+                createdAt = System.currentTimeMillis(),
+                password = currentState.password.trim() // 🔹 Added password
             )
 
             repository.insertEmployee(employee)
@@ -75,7 +92,7 @@ class AddEmployeeViewModel @Inject constructor(private val repository: EmployeeR
     }
 
     fun resetSuccess() {
-        _uiState.update { AddEmployeeUiState() } // Fully reset for next entry
+        _uiState.update { AddEmployeeUiState() }
     }
 
     private fun updateSaveEnabledState() {
@@ -83,15 +100,18 @@ class AddEmployeeViewModel @Inject constructor(private val repository: EmployeeR
             state.copy(isSaveEnabled = state.name.isNotBlank() &&
                     state.email.isNotBlank() &&
                     state.role.isNotBlank() &&
+                    state.password.isNotBlank() && // 🔹 Requirement for button
                     state.nameError == null &&
-                    state.emailError == null)
+                    state.emailError == null &&
+                    state.passwordError == null)
         }
     }
 
     private fun validate(state: AddEmployeeUiState): Boolean {
         val nameValid = state.name.trim().length >= 3
         val emailValid = isValidEmail(state.email.trim())
-        return nameValid && emailValid && state.role.isNotBlank()
+        val passwordValid = state.password.length >= 4
+        return nameValid && emailValid && passwordValid && state.role.isNotBlank()
     }
 
     private fun isValidEmail(email: String): Boolean {

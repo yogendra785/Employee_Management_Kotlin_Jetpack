@@ -1,10 +1,12 @@
 package com.example.neutron.data.repository
 
+import android.util.Log
 import com.example.neutron.data.local.dao.EmployeeDao
 import com.example.neutron.data.mapper.toEmployee
 import com.example.neutron.data.mapper.toEmployeeEntity
 import com.example.neutron.domain.model.Employee
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 
 class EmployeeRepository(
@@ -27,6 +29,15 @@ class EmployeeRepository(
         dao.insertEmployee(employee.toEmployeeEntity())
     }
 
+    suspend fun findEmployeeById(id: Long): Employee? {
+        return try {
+            dao.getEmployeeById(id).map { it?.toEmployee() }.firstOrNull()
+        } catch (e: Exception) {
+            Log.e("EmployeeRepository", "Error finding employee by ID: $id", e)
+            null
+        }
+    }
+
     suspend fun updateEmployee(employee: Employee) {
         dao.updateEmployee(employee.toEmployeeEntity())
     }
@@ -40,7 +51,6 @@ class EmployeeRepository(
     }
 
     suspend fun isEmailExists(email: String): Boolean {
-        // This now directly uses the Boolean check from our updated DAO
         return dao.isEmailExists(email)
     }
 }

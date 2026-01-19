@@ -13,6 +13,7 @@ fun AttendanceItem(
     name: String,
     status: AttendanceStatus?,
     isLocked: Boolean,
+    isAdmin: Boolean,
     onPresent: () -> Unit,
     onAbsent: () -> Unit
 ) {
@@ -35,7 +36,7 @@ fun AttendanceItem(
             FilterChip(
                 selected = status == AttendanceStatus.PRESENT,
                 onClick = onPresent,
-                enabled = !isLocked,
+                enabled = !isLocked && isAdmin,
                 label = { Text("Present") },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -49,7 +50,7 @@ fun AttendanceItem(
             FilterChip(
                 selected = status == AttendanceStatus.ABSENT,
                 onClick = onAbsent,
-                enabled = !isLocked,
+                enabled = !isLocked && isAdmin,
                 label = { Text("Absent") },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.errorContainer,
