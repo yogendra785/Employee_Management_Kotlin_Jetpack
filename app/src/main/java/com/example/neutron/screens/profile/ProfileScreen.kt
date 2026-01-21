@@ -1,7 +1,9 @@
 package com.example.neutron.screens.profile
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Badge
@@ -13,8 +15,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.neutron.viewmodel.auth.AuthViewModel
 
@@ -25,103 +32,166 @@ fun ProfileScreen(
     navController: NavHostController,
     onLogout: () -> Unit
 ) {
-    // 🔹 Collect real user data from the AuthViewModel session
     val currentUser by authViewModel.currentUser.collectAsState()
 
-    // Fallback values if data is still loading or null
     val displayName = currentUser?.name ?: "Yogendra Singh"
-    val displayRole = currentUser?.role ?: "Android Developer"
-    val displayEmail = "yshekhawat785@gmail.com" // Update your Entity to include email later!
-    val displayId = currentUser?.id?.toString() ?: "EMP-2027"
+    val displayRole = currentUser?.role ?: "Admin" // Matches your Firestore role
+    val displayEmail = "yshekhawat785@gmail.com"
+    val displayId = currentUser?.id?.toString() ?: "EMP-2027" // Matches your graduation year!
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                        MaterialTheme.colorScheme.surface
+                    )
+                )
+            )
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Top Header
         Text(
             text = "My Profile",
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp
+            ),
             modifier = Modifier.align(Alignment.Start)
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(40.dp))
 
-        // Avatar section
-        Surface(
-            modifier = Modifier.size(100.dp),
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.primaryContainer
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Text(
-                    text = displayName.take(1),
-                    style = MaterialTheme.typography.displayMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+        // Advanced Avatar Section
+        Box(contentAlignment = Alignment.BottomEnd) {
+            Surface(
+                modifier = Modifier.size(120.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary,
+                shadowElevation = 8.dp
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = displayName.take(1).uppercase(),
+                        style = MaterialTheme.typography.displayLarge.copy(
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    )
+                }
             }
+            // Small online status indicator
+            Surface(
+                modifier = Modifier.size(28.dp),
+                shape = CircleShape,
+                color = Color(0xFF4CAF50), // Green
+                border = ButtonDefaults.outlinedButtonBorder
+            ) {}
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        Text(text = displayName, style = MaterialTheme.typography.headlineSmall)
         Text(
-            text = displayRole,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.outline
+            text = displayName,
+            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Surface(
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.padding(top = 8.dp)
+        ) {
+            Text(
+                text = displayRole,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+        }
 
-        ProfileInfoItem(icon = Icons.Default.Person, label = "Full Name", value = displayName)
-        ProfileInfoItem(icon = Icons.Default.Email, label = "Email", value = displayEmail)
-        ProfileInfoItem(icon = Icons.Default.Badge, label = "Employee ID", value = displayId)
+        Spacer(modifier = Modifier.height(40.dp))
+
+        // Info Section using Elevated Cards
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            ProfileInfoCard(icon = Icons.Default.Person, label = "Full Name", value = displayName)
+            ProfileInfoCard(icon = Icons.Default.Email, label = "Email Address", value = displayEmail)
+            ProfileInfoCard(icon = Icons.Default.Badge, label = "Employee ID", value = displayId)
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // Logout button
+        // Modern Logout Button
         Button(
             onClick = {
-                authViewModel.logout()
-                onLogout()
+                authViewModel.logout() // Signs out of Firebase
+                onLogout() // Navigates to Login
             },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.errorContainer,
-                contentColor = MaterialTheme.colorScheme.error
-            )
+                containerColor = MaterialTheme.colorScheme.error,
+                contentColor = Color.White
+            ),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
         ) {
             Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Logout")
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                "Sign Out",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+            )
         }
     }
 }
 
 @Composable
-fun ProfileInfoItem(icon: ImageVector, label: String, value: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(24.dp)
+fun ProfileInfoCard(icon: ImageVector, label: String, value: String) {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface
         )
-        Spacer(modifier = Modifier.width(16.dp))
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                modifier = Modifier.size(48.dp),
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
 
-        Column {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.outline
-            )
-            Text(text = value, style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.outline
+                )
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold)
+                )
+            }
         }
     }
 }

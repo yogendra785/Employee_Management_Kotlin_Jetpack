@@ -1,12 +1,30 @@
 package com.example.neutron.screens.dashboard
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.FactCheck
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.FactCheck
+import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.PostAdd
+import androidx.compose.material.icons.filled.Today
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.neutron.navigation.NavRoutes
@@ -18,24 +36,39 @@ fun DashboardScreen(
     navController: NavController,
     authViewModel: AuthViewModel
 ) {
-    // 🔹 Observe the entire authentication state
     val authState by authViewModel.authState.collectAsState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(horizontal = 20.dp)
     ) {
-        // Header
+        Spacer(modifier = Modifier.height(52.dp))
+
+        // --- Header Section ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Welcome back!", style = MaterialTheme.typography.headlineMedium)
+            Column {
+                Text(
+                    "Dashboard",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.ExtraBold
+                )
+                Text(
+                    "Neutron Management System",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.outline
+                )
+            }
 
-            IconButton(onClick = { authViewModel.logout() }) {
+            IconButton(
+                onClick = { authViewModel.logout() },
+                modifier = Modifier.background(MaterialTheme.colorScheme.errorContainer, CircleShape)
+            ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.Logout,
                     contentDescription = "Logout",
@@ -44,80 +77,114 @@ fun DashboardScreen(
             }
         }
 
-        // 🔹 1. Shared Feature: Attendance (Visible to everyone)
-        DashboardCard(
-            title = "Daily Attendance",
-            subtitle = "Mark present/absent for today",
-            onClick = { navController.navigate(NavRoutes.ATTENDANCE) }
-        )
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // 🔹 2. Handle different authentication states
-        when (val state = authState) {
-            is AuthState.Authenticated -> {
-                // If authenticated, then check the role
-                when (state.userRole) {
+        // --- Main Content Grid ---
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // 1. Shared Feature: Attendance (Full Width)
+            item(span = { GridItemSpan(2) }) {
+                DashboardCard(
+                    title = "Daily Attendance",
+                    subtitle = "Mark present/absent for today",
+                    icon = Icons.Default.Today,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    onClick = { navController.navigate(NavRoutes.ATTENDANCE) }
+                )
+            }
+
+            // 2. Role-Based Content
+            val currentState = authState
+            if (currentState is AuthState.Authenticated) {
+                when (currentState.userRole) {
                     "ADMIN" -> {
-                        // ADMIN ONLY: Staff Management
-                        DashboardCard(
-                            title = "Manage Employees",
-                            subtitle = "View, add, or edit staff members",
-                            onClick = { navController.navigate(NavRoutes.EMPLOYEE) }
-                        )
-
-                        // ADMIN ONLY: Leave Approval
-                        DashboardCard(
-                            title = "Review Leave Requests",
-                            subtitle = "Approve or reject employee leaves",
-                            onClick = { navController.navigate(NavRoutes.ADMIN_LEAVE_LIST) }
-                        )
+                        item {
+                            DashboardCard(
+                                title = "Employees",
+                                subtitle = "Manage Staff",
+                                icon = Icons.Default.Groups,
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                onClick = { navController.navigate(NavRoutes.EMPLOYEE) }
+                            )
+                        }
+                        item {
+                            DashboardCard(
+                                title = "Approvals",
+                                subtitle = "Review Leaves",
+                                icon = Icons.AutoMirrored.Filled.FactCheck,
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                onClick = { navController.navigate(NavRoutes.ADMIN_LEAVE_LIST) }
+                            )
+                        }
                     }
                     "EMPLOYEE" -> {
-                        // EMPLOYEE ONLY: Requesting and History
-                        DashboardCard(
-                            title = "Leave Request",
-                            subtitle = "Apply for time off",
-                            onClick = { navController.navigate(NavRoutes.LEAVE_REQUEST) }
-                        )
-
-                        DashboardCard(
-                            title = "My Leave History",
-                            subtitle = "Check status of your request",
-                            onClick = { navController.navigate(NavRoutes.MY_LEAVE_HISTORY) }
-                        )
+                        item {
+                            DashboardCard(
+                                title = "Leave",
+                                subtitle = "Apply Now",
+                                icon = Icons.Default.PostAdd,
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                onClick = { navController.navigate(NavRoutes.LEAVE_REQUEST) }
+                            )
+                        }
+                        item {
+                            DashboardCard(
+                                title = "History",
+                                subtitle = "View Status",
+                                icon = Icons.Default.History,
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                onClick = { navController.navigate(NavRoutes.MY_LEAVE_HISTORY) }
+                            )
+                        }
                     }
                 }
             }
-            AuthState.Loading -> {
-                // Show a loader while role is being fetched
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            }
-            is AuthState.Error, AuthState.Unauthenticated -> {
-                // For this screen, we can just show a loading state or nothing
-                // as the user will likely be redirected away by the NavHost soon.
-                // Or you can add a specific message.
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
+        }
+
+        // Loading Indicator
+        if (authState == AuthState.Loading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
         }
     }
 }
 
 @Composable
-fun DashboardCard(title: String, subtitle: String, onClick: () -> Unit) {
+fun DashboardCard(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    containerColor: Color,
+    onClick: () -> Unit
+) {
     ElevatedCard(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.elevatedCardColors(containerColor = containerColor)
     ) {
-        Column(modifier = Modifier.padding(24.dp)) {
-            Text(title, style = MaterialTheme.typography.titleLarge)
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant // Improved readability
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(32.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            Column {
+                Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
+            }
         }
     }
 }
