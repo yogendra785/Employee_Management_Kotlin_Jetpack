@@ -3,7 +3,6 @@ package com.example.neutron.screens.dashboard
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
-
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
@@ -11,17 +10,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.FactCheck
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.Badge
-import androidx.compose.material.icons.filled.FactCheck
-import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.PostAdd
-import androidx.compose.material.icons.filled.Today
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -85,7 +78,6 @@ fun DashboardScreen(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 1. Shared Feature: Attendance (Full Width)
             item(span = { GridItemSpan(2) }) {
                 DashboardCard(
                     title = "Daily Attendance",
@@ -96,7 +88,6 @@ fun DashboardScreen(
                 )
             }
 
-            // 2. Role-Based Content
             val currentState = authState
             if (currentState is AuthState.Authenticated) {
                 when (currentState.userRole) {
@@ -117,6 +108,16 @@ fun DashboardScreen(
                                 icon = Icons.AutoMirrored.Filled.FactCheck,
                                 containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                                 onClick = { navController.navigate(NavRoutes.ADMIN_LEAVE_LIST) }
+                            )
+                        }
+                        // 🔹 NEW: Salary Management Card for Admin
+                        item(span = { GridItemSpan(2) }) {
+                            DashboardCard(
+                                title = "Salary Management",
+                                subtitle = "Process monthly payroll",
+                                icon = Icons.Default.Payments,
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                onClick = { navController.navigate(NavRoutes.SALARY_MANAGEMENT) }
                             )
                         }
                     }
@@ -144,7 +145,6 @@ fun DashboardScreen(
             }
         }
 
-        // Loading Indicator
         if (authState == AuthState.Loading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()

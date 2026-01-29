@@ -1,8 +1,6 @@
 package com.example.neutron.viewmodel.employee
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.neutron.data.repository.EmployeeRepository
@@ -23,15 +21,6 @@ class AddEmployeeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(AddEmployeeUiState())
     val uiState: StateFlow<AddEmployeeUiState> = _uiState.asStateFlow()
 
-    // 🔹 Added password change handler for the UI
-    fun onPasswordChange(value: String) {
-        _uiState.update { it.copy(
-            password = value,
-            passwordError = if (value.length < 4) "Password must be at least 4 characters" else null
-        ) }
-        updateSaveEnabledState()
-    }
-
     fun onNameChange(value: String) {
         _uiState.update { it.copy(
             name = value,
@@ -44,6 +33,14 @@ class AddEmployeeViewModel @Inject constructor(
         _uiState.update { it.copy(
             email = value,
             emailError = if (!isValidEmail(value.trim())) "Invalid email format" else null
+        ) }
+        updateSaveEnabledState()
+    }
+
+    fun onPasswordChange(value: String) {
+        _uiState.update { it.copy(
+            password = value,
+            passwordError = if (value.length < 6) "Password too short" else null
         ) }
         updateSaveEnabledState()
     }
@@ -61,6 +58,11 @@ class AddEmployeeViewModel @Inject constructor(
         _uiState.update { it.copy(isActive = value) }
     }
 
+    // New function to handle image selection from the UI
+    fun onImageSelected(uri: Uri?) {
+        _uiState.update { it.copy(selectedImageUri = uri) }
+    }
+
     fun onSaveEmployee() {
         val currentState = _uiState.value
         if (!validate(currentState)) return
@@ -74,19 +76,22 @@ class AddEmployeeViewModel @Inject constructor(
                 return@launch
             }
 
-            // 🔹 Corrected Constructor: Including all required fields
             val employee = Employee(
-                id = 0, // 0 for Room auto-generation
+                id = 0,
+                firebaseUid = "",
                 name = currentState.name.trim(),
                 email = currentState.email.trim(),
                 role = currentState.role.trim(),
                 department = currentState.department.trim(),
                 isActive = currentState.isActive,
+                password = currentState.password,
                 createdAt = System.currentTimeMillis(),
-                password = currentState.password.trim() // 🔹 Added password
+                imagePath = null // The repository will update this path
             )
 
-            repository.insertEmployee(employee)
+            // ✅ Corrected: Passing both the employee and the selected Uri
+            repository.insertEmployeeWithImage(employee, currentState.selectedImageUri)
+
             _uiState.update { it.copy(isSuccess = true, isLoading = false) }
         }
     }
@@ -100,7 +105,7 @@ class AddEmployeeViewModel @Inject constructor(
             state.copy(isSaveEnabled = state.name.isNotBlank() &&
                     state.email.isNotBlank() &&
                     state.role.isNotBlank() &&
-                    state.password.isNotBlank() && // 🔹 Requirement for button
+                    state.password.isNotBlank() &&
                     state.nameError == null &&
                     state.emailError == null &&
                     state.passwordError == null)
@@ -110,8 +115,8 @@ class AddEmployeeViewModel @Inject constructor(
     private fun validate(state: AddEmployeeUiState): Boolean {
         val nameValid = state.name.trim().length >= 3
         val emailValid = isValidEmail(state.email.trim())
-        val passwordValid = state.password.length >= 4
-        return nameValid && emailValid && passwordValid && state.role.isNotBlank()
+        val passwordValid = state.password.length >= 6
+        return nameValid && emailValid && state.role.isNotBlank() && passwordValid
     }
 
     private fun isValidEmail(email: String): Boolean {

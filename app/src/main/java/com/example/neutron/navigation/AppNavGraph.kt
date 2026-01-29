@@ -14,6 +14,7 @@ import com.example.neutron.screens.leave.AdminLeaveListScreen
 import com.example.neutron.screens.leave.LeaveRequestScreen
 import com.example.neutron.screens.leave.MyLeaveHistoryScreen
 import com.example.neutron.screens.profile.ProfileScreen
+import com.example.neutron.screens.salary.SalaryManagementScreen
 import com.example.neutron.viewmodel.attendance.AttendanceViewModel
 import com.example.neutron.viewmodel.auth.AuthViewModel
 import com.example.neutron.viewmodel.employee.AddEmployeeViewModel
@@ -32,6 +33,11 @@ fun NavGraphBuilder.appNavGraph(
             authViewModel = authViewModel
         )
     }
+    composable(NavRoutes.SALARY_MANAGEMENT) {
+        SalaryManagementScreen(
+            onBackClick = { appNavController.popBackStack() }
+        )
+    }
     if (userRole == "ADMIN") {
         adminNavGraph(appNavController)
     }
@@ -40,30 +46,30 @@ fun NavGraphBuilder.appNavGraph(
 }
 
 private fun NavGraphBuilder.adminNavGraph(navController: NavHostController) {
-    composable(NavRoutes.EMPLOYEE) {
-        val vm: EmployeeViewModel = hiltViewModel()
-        EmployeeListScreen(
-            viewModel = vm,
-            navigate = { route -> navController.navigate(route) }
-        )
-    }
+
     composable(NavRoutes.ADD_EMPLOYEE) {
         val vm: AddEmployeeViewModel = hiltViewModel()
         AddEmployeeScreen(
             viewModel = vm,
-            onBack = { navController.popBackStack() }
-        )
+            onBack = { navController.popBackStack() })
     }
     composable(NavRoutes.ADMIN_LEAVE_LIST) {
         val leaveVM: LeaveViewModel = hiltViewModel()
         AdminLeaveListScreen(
             viewModel = leaveVM,
-            onBack = { navController.popBackStack() }
-        )
+            onBack = { navController.popBackStack() })
     }
 }
 
 private fun NavGraphBuilder.employeeNavGraph(navController: NavHostController, userRole: String) {
+    if (userRole == "ADMIN") {
+        composable(NavRoutes.EMPLOYEE) {
+            val vm: EmployeeViewModel = hiltViewModel()
+            EmployeeListScreen(
+                viewModel = vm,
+                navigate = { route -> navController.navigate(route) })
+        }
+    }
     composable(NavRoutes.ATTENDANCE) {
         val eVM: EmployeeViewModel = hiltViewModel()
         val aVM: AttendanceViewModel = hiltViewModel()
@@ -100,8 +106,7 @@ private fun NavGraphBuilder.commonNavGraph(
             employeeId = empId,
             employeeViewModel = eVM,
             attendanceViewModel = aVM,
-            onBack = { appNavController.popBackStack() }
-        )
+            onBack = { appNavController.popBackStack() })
     }
     composable(NavRoutes.PROFILE) {
         ProfileScreen(

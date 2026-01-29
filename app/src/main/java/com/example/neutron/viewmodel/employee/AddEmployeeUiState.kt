@@ -1,17 +1,18 @@
 package com.example.neutron.viewmodel.employee
 
+import android.net.Uri
+
 data class AddEmployeeUiState(
     val name: String = "",
+    val nameError: String? = null,
     val email: String = "",
-    val role: String = "",
+    val emailError: String? = null,
+    val password: String = "",
+    val passwordError: String? = null,
+    val role: String = "STAFF",
     val department: String = "",
     val isActive: Boolean = true,
-    val password: String = "", // Fixed: Reference for ViewModel
-
-    val nameError: String? = null,
-    val emailError: String? = null,
-    val passwordError: String? = null, // Fixed: Reference for ViewModel
-
+    val selectedImageUri: Uri? = null,
     val isSaveEnabled: Boolean = false,
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false

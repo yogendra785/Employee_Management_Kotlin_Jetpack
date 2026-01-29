@@ -8,10 +8,12 @@ data class EmployeeEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val name: String,
+    val firebaseUid: String,
     val email: String,
     val role: String,
     val department: String,
     val isActive: Boolean = true,
     val createdAt: Long,
-    val password: String // Added password field
+    val imagePath: String? = null
+
 )

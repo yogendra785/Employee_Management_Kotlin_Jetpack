@@ -13,7 +13,9 @@ fun EmployeeEntity.toEmployee(): Employee {
         department = department,
         isActive = isActive,
         createdAt = createdAt,
-        password = password
+        firebaseUid = firebaseUid,
+        imagePath = imagePath,
+        password = ""
     )
 }
 
@@ -27,6 +29,7 @@ fun Employee.toEmployeeEntity(): EmployeeEntity {
         department = department,
         isActive = isActive,
         createdAt = createdAt,
-        password = password
+       firebaseUid = firebaseUid,
+        imagePath = imagePath
     )
 }

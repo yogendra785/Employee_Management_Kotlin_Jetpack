@@ -5,22 +5,24 @@ import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.neutron.data.local.dao.AttendanceDao
 import com.example.neutron.data.local.dao.EmployeeDao
+import com.example.neutron.data.local.dao.LeaveDao
+import com.example.neutron.data.local.dao.SalaryDao // Added
 import com.example.neutron.data.local.entity.AttendanceEntity
 import com.example.neutron.data.local.entity.EmployeeEntity
+import com.example.neutron.data.local.entity.SalaryEntity // Added
 import com.example.neutron.domain.model.LeaveRequest
-import com.example.neutron.data.local.dao.LeaveDao
 import java.util.concurrent.Executors
 
 @Database(
     entities = [
         EmployeeEntity::class,
         AttendanceEntity::class,
-        LeaveRequest::class
+        LeaveRequest::class,
+        SalaryEntity::class // 1. Added SalaryEntity
     ],
-    version = 7, // 🔹 Incremented to 7 to force a fresh start
+    version = 10, // 2. Incremented version from 9 to 10
     exportSchema = false
 )
 abstract class EmployeeDatabase : RoomDatabase() {
@@ -28,6 +30,7 @@ abstract class EmployeeDatabase : RoomDatabase() {
     abstract fun employeeDao(): EmployeeDao
     abstract fun attendanceDao(): AttendanceDao
     abstract fun leaveDao(): LeaveDao
+    abstract fun salaryDao(): SalaryDao // 3. Added SalaryDao
 
     companion object {
         @Volatile
@@ -40,10 +43,11 @@ abstract class EmployeeDatabase : RoomDatabase() {
                     EmployeeDatabase::class.java,
                     "employee_db"
                 )
+                    // Destructive migration will wipe the DB since you changed the schema
                     .fallbackToDestructiveMigration()
                     .build()
 
-                // 🔹 Manual Injection: This ensures the Admin user is created even if onCreate fails
+                // Admin check logic
                 Executors.newSingleThreadExecutor().execute {
                     try {
                         instance.openHelper.writableDatabase.execSQL(

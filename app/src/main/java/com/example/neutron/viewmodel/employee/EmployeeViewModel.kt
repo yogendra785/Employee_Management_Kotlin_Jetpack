@@ -16,7 +16,6 @@ class EmployeeViewModel @Inject constructor(
 
     private var recentlyDeletedEmployee: Employee? = null
 
-    // 🔹 Convert cold flow to StateFlow for UI performance
     val employees: StateFlow<List<Employee>> =
         repository.getAllEmployees()
             .stateIn(
@@ -25,9 +24,10 @@ class EmployeeViewModel @Inject constructor(
                 initialValue = emptyList()
             )
 
+    // ✅ FIX: Changed function name and added null for the Uri
     fun insertEmployee(employee: Employee) {
         viewModelScope.launch {
-            repository.insertEmployee(employee)
+            repository.insertEmployeeWithImage(employee, null)
         }
     }
 
@@ -47,10 +47,11 @@ class EmployeeViewModel @Inject constructor(
         }
     }
 
+    // ✅ FIX: Changed function name and added null for the Uri
     fun undoDelete() {
         recentlyDeletedEmployee?.let { employee ->
             viewModelScope.launch {
-                repository.insertEmployee(employee)
+                repository.insertEmployeeWithImage(employee, null)
                 recentlyDeletedEmployee = null
             }
         }

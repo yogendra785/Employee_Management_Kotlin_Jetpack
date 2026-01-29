@@ -20,5 +20,8 @@ object NavRoutes {
     const val MY_LEAVE_HISTORY = "my_leave_history"
 
     const val PROFILE = "profile_screen"
+
+    //salary Management
+    const val SALARY_MANAGEMENT = "salary_management"
     fun createDetailRoute(id: Long) = "employee_detail/$id"
 }

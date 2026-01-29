@@ -1,15 +1,25 @@
 package com.example.neutron.screens.employee
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.neutron.viewmodel.employee.AddEmployeeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -20,15 +30,23 @@ fun AddEmployeeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Navigate back automatically once the employee is saved in DB
-    LaunchedEffect(uiState.isSuccess) {
+    var passwordVisible by remember { mutableStateOf(false) }
+
+    // Image picker launcher
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        viewModel.onImageSelected(uri)
+    }
+
+    // Navigate back automatically once the employee is saved
+    LaunchedEffect(key1 = uiState.isSuccess) {
         if (uiState.isSuccess) {
             onBack()
             viewModel.resetSuccess()
         }
     }
 
-    // 🔹 FIX: Removed the internal Scaffold to prevent navigation "ghosting"
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -36,12 +54,28 @@ fun AddEmployeeScreen(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // 🔹 ADDED: Manual Header instead of TopAppBar to avoid Scaffold layering
+        // Header
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")
             }
             Text("New Employee", style = MaterialTheme.typography.titleLarge)
+        }
+
+        // 🔹 Image Picker Button inside Column
+        Button(onClick = { launcher.launch("image/*") }) {
+            Text("Select Profile Image")
+        }
+
+        // 🔹 Show selected image preview if available
+        uiState.selectedImageUri?.let { uri ->
+            AsyncImage(
+                model = uri,
+                contentDescription = "Selected Profile Image",
+                modifier = Modifier
+                    .size(120.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
         }
 
         OutlinedTextField(
@@ -61,6 +95,24 @@ fun AddEmployeeScreen(
             supportingText = { uiState.emailError?.let { Text(it) } },
             modifier = Modifier.fillMaxWidth()
         )
+
+        OutlinedTextField(
+            value = uiState.password,
+            onValueChange = viewModel::onPasswordChange,
+            label = { Text("Password") },
+            isError = uiState.passwordError != null,
+            supportingText = { uiState.passwordError?.let { Text(it) } },
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            trailingIcon = {
+                val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(imageVector = image, contentDescription = if (passwordVisible) "Hide password" else "Show password")
+                }
+            }
+        )
+
 
         OutlinedTextField(
             value = uiState.role,
@@ -99,7 +151,6 @@ fun AddEmployeeScreen(
             }
         }
 
-        // 🔹 Spacer doesn't work well inside a verticalScroll unless you give it height
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(

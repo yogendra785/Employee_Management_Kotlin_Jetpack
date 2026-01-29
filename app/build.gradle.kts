@@ -53,9 +53,11 @@ dependencies {
 
     // HILT Dependency Injection
     implementation(libs.hilt.android)
+    implementation(libs.ads.mobile.sdk)
     kapt(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
-
+   //image dependency
+    implementation("io.coil-kt:coil-compose:2.5.0")
     // Jetpack Compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
