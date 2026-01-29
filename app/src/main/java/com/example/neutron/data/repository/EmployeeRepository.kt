@@ -3,11 +3,14 @@ package com.example.neutron.data.repository
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import com.example.neutron.data.local.dao.AttendanceDao
 import com.example.neutron.data.local.dao.EmployeeDao
 import com.example.neutron.data.local.dao.SalaryDao // Import this
+import com.example.neutron.data.local.entity.AttendanceEntity
 import com.example.neutron.data.local.entity.SalaryEntity
 import com.example.neutron.data.mapper.toEmployee
 import com.example.neutron.data.mapper.toEmployeeEntity
+import com.example.neutron.domain.model.AttendanceStatus
 import com.example.neutron.domain.model.Employee
 import com.example.neutron.domain.model.SalaryRecord
 import kotlinx.coroutines.Dispatchers
@@ -16,11 +19,16 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class EmployeeRepository(
     private val dao: EmployeeDao,
-    private val salaryDao: SalaryDao, // 1. Added SalaryDao here
-    private val context: Context
+    private val salaryDao: SalaryDao,
+
+    private val attendanceDao: AttendanceDao,
+    private val context: Context,
 ) {
 
     // --- Employee Functions ---
@@ -97,6 +105,30 @@ class EmployeeRepository(
         )
         // 2. Used salaryDao instead of dao
         salaryDao.insertSalary(entity)
+    }
+    // 1. Logic to count absences for a specific month
+    // 1. Logic to count absences for a specific month
+    suspend fun getAbsentCount(employeeId: Long, month: String): Int = withContext(Dispatchers.IO) {
+        try {
+            // 🔹 FIX: Changed 'dao' to 'attendanceDao'
+            val list: List<AttendanceEntity> = attendanceDao.getAttendanceByEmployee(employeeId).firstOrNull() ?: emptyList()
+
+            list.count { attendance: AttendanceEntity ->
+                // Use .name if status is an Enum in your Entity, or just the string comparison
+                attendance.status == AttendanceStatus.ABSENT.name && isDateInMonth(attendance.date, month)
+            }
+        } catch (e: Exception) {
+            Log.e("EmployeeRepository", "Error counting absences", e)
+            0
+        }
+    }
+
+    private fun isDateInMonth(timestamp: Long, monthYearString: String): Boolean {
+        val cal = Calendar.getInstance().apply { timeInMillis = timestamp }
+        // SimpleDateFormat fix
+        val sdf = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
+        val formattedDate = sdf.format(cal.time)
+        return formattedDate.equals(monthYearString, ignoreCase = true)
     }
 
     // In EmployeeRepository.kt

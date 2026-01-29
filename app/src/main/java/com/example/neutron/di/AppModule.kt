@@ -61,10 +61,17 @@ object AppModule {
     @Provides
     @Singleton
     fun provideEmployeeRepository(
-        dao: EmployeeDao,
-        salaryDao: SalaryDao, // 🔹 Added this parameter
-        @ApplicationContext context: Context
+        employeeDao: EmployeeDao,
+        salaryDao: SalaryDao,
+        attendanceDao: AttendanceDao, // 3rd position
+        @ApplicationContext context: Context // 4th position
     ): EmployeeRepository {
-        return EmployeeRepository(dao, salaryDao, context) // 🔹 Now matches your updated constructor
+        // 🔹 Ensure these are passed in the EXACT order defined in your Repository class
+        return EmployeeRepository(
+            dao = employeeDao,
+            salaryDao = salaryDao,
+            attendanceDao = attendanceDao,
+            context = context
+        )
     }
 }

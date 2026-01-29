@@ -12,7 +12,6 @@ interface AttendanceDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAttendance(attendance: AttendanceEntity)
 
-    // Recommended: Normalize date to midnight (00:00:00) before passing here
     @Query("SELECT * FROM attendance WHERE date = :date ORDER BY id DESC")
     fun getAttendanceByDate(date: Long): Flow<List<AttendanceEntity>>
 
@@ -21,4 +20,8 @@ interface AttendanceDao {
 
     @Query("SELECT * FROM attendance ORDER BY date DESC")
     fun getAllAttendance(): Flow<List<AttendanceEntity>>
+
+    // 🔹 MOVED THIS OUT OF THE NESTED INTERFACE
+    @Query("SELECT * FROM attendance WHERE employeeId = :empId")
+    fun getAttendanceByEmployee(empId: Long): Flow<List<AttendanceEntity>>
 }
